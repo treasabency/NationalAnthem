@@ -19,7 +19,6 @@ anthem <- removeWords(anthem, c("may","thee","thou","thy",
                                 "avoid","one","make","let","shall"))
 
 
-
 corpus <- Corpus(VectorSource(anthem))
 dtm <- as.matrix(DocumentTermMatrix(corpus))
 
