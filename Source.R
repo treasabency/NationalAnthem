@@ -28,6 +28,7 @@ my_func <- function(D){
   x
 }
 
+
 anthem <- my_func(anthems)
 
 corpus <- VectorSource(anthem)
