@@ -6,20 +6,27 @@ install.packages("proxy")
 install.packages("ggplot2")
 install.packages("cluster")
 install.packages("xfun")
+install.packages("factoextra")
+install.packages("tidyverse")
+install.packages("textclean")
+install.packages("qdapRegex")
+library(qdapRegex)
+library(textclean)
+library(tidyverse)
+library(factoextra)
 library(xfun)
 library(cluster)
 library(ggplot2)
 library(proxy)
-library(doSNOW)
 library(stringr)
 library(tm)
 library(dplyr)
 library(tidytext)
 
-# data source
-data <- anthems    
+#copy of data source
+data <- anthems 
 
-# create a list of anthems from data source
+# extract anthems for cleaning
 my_func <- function(D){
   x <- list()
   for (k in 1:190){
@@ -28,35 +35,29 @@ my_func <- function(D){
   x
 }
 
+# data processing
 anthem <- my_func(anthems)
-
 corpus <- VectorSource(anthem)
 corpus <- Corpus(corpus)
-
-# list of custom stopwords
-cwords <- c(stopwords)
-
-# data cleaning
 anthem <- tm::tm_map(corpus, tolower)
 anthem <- tm::tm_map(anthem, removeWords, stopwords("english"))
-anthem <- tm::tm_map(anthem, removeNumbers)
+stopwords <- head(sort(unlist(stopwords), decreasing=TRUE), 960)
+stopwords <- removePunctuation(stopwords)
+anthem <- tm::tm_map(anthem, removeWords, stopwords)
 anthem <- tm::tm_map(anthem, removePunctuation)
-anthem <- tm::tm_map(anthem, removeWords, c("may","thee","thou","thy",
-                                            "say","ever","every","across",
-                                            "another","many","will","cut","always",
-                                            "avoid","listanthem","one","make","let","shall"))
-                                            
-
-#custom <- c(stopwords)
-#custom <- head(sort(unlist(custom), decreasing=TRUE), 3) 
 anthem <- tm::tm_map(anthem, stemDocument)
+anthem <- tm::tm_map(anthem, removeWords, c("listanthem"))
+anthem <- tm::tm_map(anthem, removeWords, "http[A-Za-z]+")
+anthem <- tm::tm_map(anthem, removeWords, "www.[A-Za-z]+")
+anthem <- tm::tm_map(anthem, removeWords, c("afa201rpafad", "aa200o", "a200oeend"))
+anthem <- tm::tm_map(anthem, rm_non_ascii)
+anthem <- tm::tm_map(anthem, rm_nchar_words, 1)
+anthem <- tm::tm_map(anthem, rm_nchar_words, 2)
 
-# data processing and TD-IDF weights
+# Td-Idf and K-means clustering
 dtm <- DocumentTermMatrix(anthem)
 dtm <- removeSparseTerms(dtm, sparse = 0.98)
 dtm.tfidf <- weightTfIdf(dtm)
-tfidf.matrix <- t(as.matrix(dtm.tfidf))
-
-# K-means cluster analysis
-fviz_nbclust(tfidf.matrix, kmeans, method = "wss")
-clustering.kmeans <- kmeans(tfidf.matrix, centers = 5, nstart = 50)
+tfidf.matrix <- t(as.matrix(dtm.tfidf)) 
+fviz_nbclust(tfidf.matrix, kmeans, method = "wss")  # elbow method to determine best k value
+clustering.kmeans <- kmeans(tfidf.matrix, centers = 7)
