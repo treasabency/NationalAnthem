@@ -32,7 +32,7 @@ my_func <- function(){
   x
 }
 
-# clean the data and lists the top 15 words in the data (specific to each anthem)
+# clean the data and lists the top 10 words in the data (specific to each anthem)
 clean_data <- function(data) {
   data <- tolower(trimws(data))
   data <- removeWords(data, c(stopwords("english"), "stopwords.csv"))
