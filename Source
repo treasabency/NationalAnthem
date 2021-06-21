@@ -50,7 +50,7 @@ clean_data <- function(data) {
   data2 <- freq
   data2 <- tibble::rownames_to_column(data2,"word")
   colnames(data2) <- c("word","count")
-  head(data2$word, 15)
+  head(data2$word, 10)
 }
 
 # clean, process and cluster the data 
@@ -105,9 +105,9 @@ final_label <- function(doc, cluster_kmeans) {
   V <- result %>%
     filter(cluster == 5)
   V <- V$word
- # VI <- result %>%
- #   filter(cluster == 6)
- # VI <- VI$word
+  VI <- result %>%
+    filter(cluster == 6)
+  VI <- VI$word
   
   count1 <- 0
   count2 <- 0
@@ -131,17 +131,31 @@ final_label <- function(doc, cluster_kmeans) {
     count <- max(count1, count2, count3, count4, count5, count6)
     #count <- names(which((count1, count2, count3, count4, count5, count6) == max(count1, count2, count3, count4, count5, count6)))
   }
-  print(count)
-  print(count1)
-  print(count2)
-  print(count3)
-  print(count4)
-  print(count5)
-  print(count6)
+  labels = c()
+  ifelse((count1 == count), labels <- print("1"),
+         ifelse((count2 == count), labels <- print("2"),
+                ifelse((count3 == count), labels <- print("3"),
+                       ifelse((count4 == count), labels <- print("4"),
+                              ifelse((count5 == count), labels <- print("5"),
+                                     ifelse((count6 == count), labels <- print("6"),)
+                              )
+                       )
+                )
+         )
+  )
+  labels
 }
 
-
-# code to test the function
-step3 <- cluster_data()
-armenia <- anthems[20,5]
-result <- final_label(armenia, step3)
+# assign the labels to the different countries
+main <- function(corpora) {
+  step3 <- cluster_data()
+  labels <- c()
+  for (k in 1:190) {
+    country <- anthems[k,5]
+    labels <- append(labels, final_label(country, step3))
+  }
+  
+  corpus <- as.data.frame(corpora)
+  corpus["labels"] <- labels
+  corpus
+}
