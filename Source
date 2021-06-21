@@ -105,9 +105,9 @@ final_label <- function(doc, cluster_kmeans) {
   V <- result %>%
     filter(cluster == 5)
   V <- V$word
-  VI <- result %>%
-    filter(cluster == 6)
-  VI <- VI$word
+ # VI <- result %>%
+ #   filter(cluster == 6)
+ # VI <- VI$word
   
   count1 <- 0
   count2 <- 0
