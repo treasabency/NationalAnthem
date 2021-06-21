@@ -23,40 +23,125 @@ library(tm)
 library(dplyr)
 library(tidytext)
 
-#copy of data source
-data <- anthems 
-
-# extract anthems for cleaning
-my_func <- function(D){
+# extract the anthems from the main data
+my_func <- function(){
   x <- list()
   for (k in 1:190){
-    x[[k]] <- D[k,5]
+    x[[k]] <- anthems[k,5]
   }
   x
 }
 
-# data processing
-anthem <- my_func(anthems)
-corpus <- VectorSource(anthem)
-corpus <- Corpus(corpus)
-anthem <- tm::tm_map(corpus, tolower)
-anthem <- tm::tm_map(anthem, removeWords, stopwords("english"))
-stopwords <- head(sort(unlist(stopwords), decreasing=TRUE), 960)
-stopwords <- removePunctuation(stopwords)
-anthem <- tm::tm_map(anthem, removeWords, stopwords)
-anthem <- tm::tm_map(anthem, removePunctuation)
-anthem <- tm::tm_map(anthem, stemDocument)
-anthem <- tm::tm_map(anthem, removeWords, "http[A-Za-z]+")
-anthem <- tm::tm_map(anthem, removeWords, "www.[A-Za-z]+")
-anthem <- tm::tm_map(anthem, removeWords, c("afa201rpafad", "aa200o", "a200oeend","listanthem"))
-anthem <- tm::tm_map(anthem, rm_non_ascii)
-anthem <- tm::tm_map(anthem, rm_nchar_words, 1)
-anthem <- tm::tm_map(anthem, rm_nchar_words, 2)
+# clean the data and lists the top 15 words in the data (specific to each anthem)
+clean_data <- function(data) {
+  data <- tolower(trimws(data))
+  data <- removeWords(data, c(stopwords("english"), "stopwords.csv"))
+  stopwords <- head(sort(unlist(stopwords), decreasing=TRUE), 986)
+  stopwords <- removePunctuation(stopwords)
+  data <- removeWords(data, stopwords)
+  data <- removePunctuation(data)
+  data <- stemDocument(data, language = "english")
+  
+  corpus <- Corpus(VectorSource(data))
+  dtm <- as.matrix(DocumentTermMatrix(corpus))
+  
+  freq <- colSums(dtm)
+  freq <- as.data.frame(sort(freq, decreasing = TRUE))
+  data2 <- freq
+  data2 <- tibble::rownames_to_column(data2,"word")
+  colnames(data2) <- c("word","count")
+  head(data2$word, 15)
+}
 
-# Td-Idf and K-means clustering
-dtm <- DocumentTermMatrix(anthem)
-dtm <- removeSparseTerms(dtm, sparse = 0.98)
-dtm.tfidf <- weightTfIdf(dtm)
-tfidf.matrix <- t(as.matrix(dtm.tfidf)) 
-fviz_nbclust(tfidf.matrix, kmeans, method = "wss")  # elbow method to determine best k value
-clustering.kmeans <- kmeans(tfidf.matrix, centers = 7)
+# clean, process and cluster the data 
+cluster_data <- function() {
+  
+  anthem <- my_func()
+  corpus <- VectorSource(anthem)
+  corpus <- Corpus(corpus)
+  anthem <- tm::tm_map(corpus, tolower)
+  anthem <- tm::tm_map(anthem, removeWords, stopwords("english"))
+  stopwords <- head(sort(unlist(stopwords), decreasing=TRUE), 986)
+  stopwords <- removePunctuation(stopwords)
+  anthem <- tm::tm_map(anthem, removeWords, stopwords)
+  anthem <- tm::tm_map(anthem, removePunctuation)
+  anthem <- tm::tm_map(anthem, stemDocument)
+  anthem <- tm::tm_map(anthem, removeWords, c("listanthem"))
+  anthem <- tm::tm_map(anthem, removeWords, "http[A-Za-z]+")
+  anthem <- tm::tm_map(anthem, removeWords, "www.[A-Za-z]+")
+  anthem <- tm::tm_map(anthem, removeWords, c("afa201rpafad", "aa200o", "a200oeend", "200end", 
+                                              "200", "thi", "arab","oer", "wait"))
+  anthem <- tm::tm_map(anthem, rm_non_ascii)
+  anthem <- tm::tm_map(anthem, rm_nchar_words, 1)
+  anthem <- tm::tm_map(anthem, rm_nchar_words, 2)
+  anthem <- tm::tm_map(anthem, removeWords, stopwords)
+  
+  dtm <- DocumentTermMatrix(anthem)
+  dtm <- removeSparseTerms(dtm, sparse = 0.98)
+  dtm.tfidf <- weightTfIdf(dtm)
+  tfidf.matrix <- t(as.matrix(dtm.tfidf)) 
+  fviz_nbclust(tfidf.matrix, kmeans, method = "wss")
+  
+  clustering.kmeans <- kmeans(tfidf.matrix, centers = 5)
+}
+
+# label the data based on the clustered info
+final_label <- function(doc, cluster_kmeans) {
+  result <- as.data.frame(cluster_kmeans$cluster)
+  result <- tibble::rownames_to_column(result, "word")
+  colnames(result) <- c("word","cluster")
+  I <- result %>%
+    filter(cluster == 1)
+  I <- I$word
+  II <- result %>%
+    filter(cluster == 2)
+  II <- II$word
+  III <- result %>%
+    filter(cluster == 3)
+  III <- III$word
+  IV <- result %>%
+    filter(cluster == 4)
+  IV <- IV$word
+  V <- result %>%
+    filter(cluster == 5)
+  V <- V$word
+  VI <- result %>%
+    filter(cluster == 6)
+  VI <- VI$word
+  
+  count1 <- 0
+  count2 <- 0
+  count3 <- 0
+  count4 <- 0
+  count5 <- 0
+  count6 <- 0
+  clean_doc <- clean_data(doc)
+  for (word in clean_doc) {
+    ifelse((is.element(word, I)),count1 <- count1+1, 
+           ifelse((is.element(word, II)), count2 <- count2+1,
+                  ifelse((is.element(word, III)), count3 <- count3+1,
+                         ifelse((is.element(word, IV)), count4 <- count4+1,
+                                ifelse((is.element(word, V)), count5 <- count5+1,
+                                       ifelse((is.element(word, VI)), count6 <- count6+1, FALSE)
+                                )
+                         )
+                  )
+           )
+    )
+    count <- max(count1, count2, count3, count4, count5, count6)
+    #count <- names(which((count1, count2, count3, count4, count5, count6) == max(count1, count2, count3, count4, count5, count6)))
+  }
+  print(count)
+  print(count1)
+  print(count2)
+  print(count3)
+  print(count4)
+  print(count5)
+  print(count6)
+}
+
+
+# code to test the function
+step3 <- cluster_data()
+armenia <- anthems[20,5]
+result <- final_label(armenia, step3)
