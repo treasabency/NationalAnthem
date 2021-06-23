@@ -2,8 +2,6 @@ install.packages("dplyr")
 install.packages("tidytext")
 install.packages("tm")
 install.packages("stringr")
-install.packages("proxy")
-install.packages("ggplot2")
 install.packages("cluster")
 install.packages("xfun")
 install.packages("factoextra")
@@ -16,8 +14,6 @@ library(tidyverse)
 library(factoextra)
 library(xfun)
 library(cluster)
-library(ggplot2)
-library(proxy)
 library(stringr)
 library(tm)
 library(dplyr)
@@ -143,7 +139,6 @@ final_label <- function(doc, cluster_kmeans) {
                 )
          )
   )
-  labels
 }
 
 # assign the labels to the different countries
