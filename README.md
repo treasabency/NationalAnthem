@@ -1,6 +1,6 @@
 # NationalAnthem
 
-Inspiration: medium.com/@lucasdesa/text-clustering-with-k-means-a039d84a941b
+Reference: medium.com/@lucasdesa/text-clustering-with-k-means-a039d84a941b
 
 This project uses a dataset of national anthems from different countries around the world and groups them together based on the anthem's theme. 
 
