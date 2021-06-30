@@ -18,5 +18,5 @@ We then use the clustered information from the above steps to create an interact
 cluster number it is assigned to. 
 
 Interactive map: public.tableau.com/app/profile/treasa.jose/viz/Anthems/Sheet1
-Online version: https://rpubs.com/tb678/Anthems
+Online version using R markdown: https://rpubs.com/tb678/Anthems
 
