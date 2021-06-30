@@ -17,6 +17,6 @@ to that cluster.
 We then use the clustered information from the above steps to create an interactive world map on Tableau, which when hovering over the countries gives you the 
 cluster number it is assigned to. 
 
-Interactive map: public.tableau.com/app/profile/treasa.jose/viz/Anthems/Sheet1
+Interactive map: public.tableau.com/app/profile/treasa.jose/viz/Anthems/Sheet1   
 Online version using R markdown: https://rpubs.com/tb678/Anthems
 
